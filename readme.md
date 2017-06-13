@@ -1,4 +1,5 @@
 
+
 ### Disclaimer
 
 ```
@@ -92,10 +93,11 @@ cms识别支持以下cms:
     wordpress
     z-blog
     opencart
-cms漏洞扫描模块支持以下cms:
-    wordpress
-    joomla
-    discuz
+
+cms漏洞扫描模块:
+在cms识别基础上支持所有exploit-db.com支持的已有漏洞,不能识别的cms暂不支持查询对应exploit-db.com漏洞库数据,
+wordpress,joomla,discuz这3个cms支持额外专门的对应漏洞扫描工具与基于exploit-db.com的漏洞库查询
+
 ```
 - 自动识别管理员页面并爆破[支持自动识别简单验证码]
 ```
@@ -114,6 +116,10 @@ d)大马类型webshell由于表单名是一定的,所以不能以1000倍速爆�
 ```
 - 资源文件收集
 - 端口扫描模块
+- 端口暴破模块
+```
+对21,22,1433,3306,3389端口根据开放情况使用medusa进行暴力破解
+```
 - whois信息收集  
 - 支持人工渗透时记录笔记
 ```
@@ -226,7 +232,6 @@ Q0:config.ini 这个文件怎么没有找到?
 A0:config.ini在python3 3xp10it.py初次运行后会自动生成,用于设置bing API key,发邮件的帐号,数据库连接配置,扫描模式
    等信息,一般会在/usr/local/lib/python3.5/dist-packages/config.ini这里,与python3的安装路径有关
 
-
 Q1:单个模块怎么使用?
 A1:单个模块执行有2种方法:
    1)web后台
@@ -236,39 +241,44 @@ Q2:为什么需要连接google才能用?
 A2:要保证能直接ping通google证明可以绕过GFW,有些domain不连vpn会无法访问,这样的domain在正常情况下被GFW拦截时会影响
    代码获取真实ip的效果,代码中强制要求连接vpn
 
-Q3:bing api key怎么注册?网上的教程都是错的?
-A3:好像是bing暂停注册了,这样的话只能向以前注册过的人要,如果bing一直这样,将考虑在代码中修改这个接口,但3个月内暂
-   时不修改
-
 ```
 
 ### Todo
 
 ```
-1.针对已经扫描到的端口进行自动爆破[eg.21,3306,1433,22,3389,use hydra]
-2.向cgc致敬,探索智能化
-3.添加支持dede,ecshop,opencart的cms漏洞扫描
-4.高危漏洞添加struts2漏洞
-5.将cms漏洞扫描变成基于exploit-db.com的searchsploit的扫描
+1.向cgc致敬,探索智能化
+    refer:https://github.com/jivoi[awesome-ml-for-cybersecurity]
+2.高危漏洞添加:
+	heartbleed
+	struts2漏洞
+	ms08-067
+	ms17-010	
+	iis6.0 nday  http://hacktech.cn/
+3.针对扫描到的开放了的未知端口尝试telnet登录测试是否是后门并针对每个漏洞进行高危模块(eg.heartbleed)检测
+	https://docs.google.com/presentation/d/1-mtBSka1ktdh8RHxo2Ft0oNNlIp7WmDA2z9zzHpon8A/edit#slide=id.p67
+	https://zhuanlan.zhihu.com/p/26618074
+4.如果脚本是php,判断所有http请求头中是否出现反序列化字符串,如果有则报警提示人工分析看看有没有可能有漏洞
+5.任意文件访问漏洞检测功能添加
+6.命令执行漏洞检测功能添加
+7.在扫描前支持导入cookie后再扫描,在数据库中对每个域名新加一个cookie栏
+8.在爬虫的时候收集邮箱地址,之后查询社工库
+	https://github.com/lauixData/leakPasswd
+	http://cha.hx99.net/
+9.参考如下标准完善
+	https://www.processon.com/view/583e8834e4b08e31357bb727
+10.爬虫时不扫描 logout 等会导致 cookie 失效的页面
 ```
 
 ### Changelog
 
 ```
-[+] 2017-02-12 修改xwaf模块更新支持所有sqlmap参数
-[+] 2017-01-22 添加支持跳转到管理员页面的爆破
-[+] 2017-01-10 add一处xcdn.py容错
-[+] 2017-01-09 添加支持人工记录渗透笔记
-[+] 2017-01-08 whois信息收集模块完善
-[+] 2017-01-08 添加端口扫描模块
-[+] 2017-01-08 cdn模块调整
-[+] 2017-01-06 添加支持如http://127.0.0.1/administrator页面的爆破,实际上http://127.0.0.1/administrator并不是
-    直接的管理员页面,在浏览器中输入http://127.0.0.1/administrator后会跳转到"http://127.0.0.1/administrator/",
-    这才是有效的待爆破的管理员页面
-[+] 在与获取旁站有关的功能上自动尝试获取cdn后真实ip再获取旁站,如果确定有cdn但是没有获取到真实ip则不再获取假的旁
-    站
-[+] 修改exp10it.py中create table %s为create table `%s`[包括其他关于表名处的%s全部换成`%s`],如果没有``将会在表名
-    为abc-def格式(中间有-符号)情况下建表失败
-[+] webshell爆破速度提升1000倍(接地气思路,适用于一句话类型webshell)
-```
- 
+[+] 2017-06-09 修改旁站查询接口，不再使用bing
+[+] 2017-06-08 对get/post请求后对返回的数据(bytes类型)做编码判断后再根据对应编码进行解码
+[+] 2017-05-29 整体扫描方案中添加delay参数防过多请求被服务器拉黑，默认delay=1s
+[+] 2017-03-23 增加填写mysql服务器地址时除ip地址格式外可以填写域名格式或localhost
+[+] 2017-03-23 修复网站属于http或https的判断
+[+] 2017-03-23 修复子域名查找时判断根域名的逻辑
+[+] 2017-03-23 修改在选择扫描模式时的默认选项为根据是否已经有config.ini文件里的扫描选项来判断
+[+] 2017-03-22 修复没有检测lxml模块安装而导致的get_request函数无法成功get请求的错误
+[+] 2017-02-22 增加cms漏洞扫描模块,基于exploit-db.com
+[+] 2017-02-21 增加常见开放端口暴破模块
